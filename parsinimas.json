@@ -1,0 +1,96 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('test', function () {
+
+//    $data = HTMLDomParser::str_get_html(file_get_contents('http://www.infomed.lt/maisto_priedai/maisto-priedai.htm'));
+//    $data = $data->find('tr');
+//
+//    array_shift($data);
+//
+//    $dataList = [];
+//
+//    foreach ($data as $key => $value) {
+//
+////        $arr = explode(',',trim($value->children[1]->text()));
+////
+////        $string = str_replace('"', '', $value->children[1]->text());
+////        dd($string);
+//
+//        $dataList[] = [
+//            'code' => $value->children[0]->text(),
+//            'translations' => [
+////                'language_code' => $arr,
+//                'label' => $value->children[1]->text(),
+//            ],
+//
+//            'description' => $value->children[2]->text(),
+//        ];
+//    }
+//
+//    $model = (json_encode($dataList, true));
+//
+//    return $model;
+
+
+    $new = [];
+
+    $list = json_decode(file_get_contents(public_path('product_additives.json')), true);
+
+    foreach ($list as $item) {
+
+        $new[] = [
+            'code' => $item['code'],
+            'translations' => getTranslations($item['label']),
+            'description' => $item['description'],
+        ];
+    }
+
+    return $new;
+
+});
+
+function getTranslations(string $item)
+{
+    $a = explode(';;;', $item);
+
+    $lt = preg_replace("/ {2,}/", " ", (trim($a[0])));
+    $lt = html_entity_decode($lt, ENT_QUOTES, 'UTF-8');
+    $lt = str_replace('  ', ' ', $lt);
+
+    if (count($a) == 2) {
+
+        $en = preg_replace("/ {2,}/", " ", (trim($a[1])));
+        $en = html_entity_decode($en, ENT_QUOTES, 'UTF-8');
+        $en = str_replace('  ', ' ', $en);
+
+        return [
+            [
+                'language_code' => 'lt',
+                'label' => $lt,
+            ],
+            [
+                'language_code' => 'en',
+                'label' => $en,
+            ],
+        ];
+    } else {
+        return [
+            [
+                'language_code' => 'lt',
+                'label' => $lt,
+            ],
+        ];
+    }
+
+}
